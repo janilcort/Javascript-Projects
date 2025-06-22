@@ -1,22 +1,26 @@
-const Calculator = {
+var Calculator = {
     Display_Value: '0',
     First_Operand: null,
-    Waiting_For_Second_Operand: false,
+    Wait_Second_Operand: false,
     operator: null,
 };
 
 function Input_Digit(digit) {
-    const {Display_value, Wait_Second_Operand} = Calculator;
+    const {Display_Value, Wait_Second_Operand} = Calculator;
     if (Wait_Second_Operand === true) {
         Calculator.Display_Value = digit;
         Calculator.Wait_Second_Operand = false;
     } else {
-        Calculator.Display_Value = Display_value === '0' ? digit : Display_value + digit;
+        Calculator.Display_Value = Display_Value === '0' ? digit : Display_Value + digit;
     }
 }
 
 function Input_Decimal(dot) {
-    if (Calculator.Wait_Second_Operand === true) return;
+    if (Calculator.Wait_Second_Operand) {
+        Calculator.Display_Value = '0.';
+        Calculator.Wait_Second_Operand = false;
+        return;
+    }
     if (!Calculator.Display_Value.includes(dot)) {
         Calculator.Display_Value += dot;
     }
@@ -30,9 +34,9 @@ function Handle_Operator(Next_Operator) {
         Calculator.operator = Next_Operator;
         return;
     }
-    if (First_Operand == null) {
+    if (First_Operand == null && !isNaN(Value_of_Input)) {
         Calculator.First_Operand = Value_of_Input;
-    }   else if (operator) {
+    } else if (operator) {
         const Value_Now = First_Operand || 0;
         let result = Perform_Calculation[operator](Value_Now, Value_of_Input);
         result = Number(result).toFixed(9);
@@ -40,22 +44,24 @@ function Handle_Operator(Next_Operator) {
         Calculator.Display_Value = parseFloat(result);
         Calculator.First_Operand = parseFloat(result);
     }
+    Calculator.Wait_Second_Operand = true;
+    Calculator.operator = Next_Operator;
 }
 
-    const Perform_Calculation = {
-        '/': (First_Operand, Second_Operand) => First_Operand / Second_Operand,
-        '*': (First_Operand, Second_Operand) => First_Operand * Second_Operand,
-        '+': (First_Operand, Second_Operand) => First_Operand + Second_Operand,
-        '-': (First_Operand, Second_Operand) => First_Operand - Second_Operand,
-        '=': (First_Operand, Second_Operand) => Second_Operand
-    };
+const Perform_Calculation = {
+    '/': (First_Operand, Second_Operand) => First_Operand / Second_Operand,
+    '*': (First_Operand, Second_Operand) => First_Operand * Second_Operand,
+    '+': (First_Operand, Second_Operand) => First_Operand + Second_Operand,
+    '-': (First_Operand, Second_Operand) => First_Operand - Second_Operand,
+    '=': (First_Operand, Second_Operand) => Second_Operand
+};
 
-    function Calculator_Reset() {
-        Calculator.Display_Value = '0';
-        Calculator.First_Operand = null;
-        Calculator.Wait_Second_Operand = false;
-        Calculator.operator = null;
-    }
+function Calculator_Reset() {
+    Calculator.Display_Value = '0';
+    Calculator.First_Operand = null;
+    Calculator.Wait_Second_Operand = false;
+    Calculator.operator = null;
+}
 
 function Update_Display() {
     const display = document.querySelector('.calculator-screen');
